@@ -4,78 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login form design</title>
-    <style>
-        *{
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body{
-            min-height: 100vh;
-            background: #eee;
-            display: flex;
-            font-family: sans-serif;
-        }
-        .container{
-            margin: auto;
-            width: 500px;
-            max-width: 90%;
-        }
-        .container form{
-            width: 100%;
-            height: 100%;
-            padding: 20px;
-            background: white;
-            border-radius: 4px;
-            box-sizing: 0 8px 16px rgba(0,0,0,.3);
-        }
-        .container form h1{
-            text-align: center;
-            margin-bottom: 24px;
-            color: #222;
-        }
-        .container form .form-control{
-            width: 100%;
-            height: 40px;
-            background: white;
-            border-radius: 4px;
-            border: 1px solid silver;
-            margin: 10px 0 18px 0;
-            padding: 0 10px;
-        }
-        .container form .btn{
-            margin-left: 50%;
-            transform: translateX(-50%);
-            width: 120px;
-            height: 34px;
-            border: none;
-            outline: none;
-            background: #27a327;
-            cursor: pointer;
-            font-size: 16px;
-            text-transform: uppercase;
-            color: white;
-            border-radius: 4px;
-            transition: .3s;
-        }
-        .container form .btn:hover{
-            opacity: .7;
-        }
-    </style>
+    <link rel="stylesheet" href="indexstyle.css">
 </head>
 <body>
     <div class="container">
-        <form action="">
+        <form id="loginForm">
             <h1>Login Form</h1>
             <div class="form-group">
-                <label for="">Email id</label>
-                <input type="text" class="form-control" required>
+                <label for="email">Email id</label>
+                <input type="text" id="email" class="form-control" required>
             </div>
             <div class="form-group">
-                <label for="">Password</label>
-                <input type="password" class="form-control" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-control" required>
             </div>
-            <input type="submit" class="btn" value="Login">
+            <button type="submit" id="submitBtn" class="btn" disabled>Login</button>
         </form>
     </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const submitBtn = document.getElementById('submitBtn');
+
+        function validateForm() {
+            if (emailInput.value.trim() !== '' && passwordInput.value.trim() !== '') {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        emailInput.addEventListener('input', validateForm);
+        passwordInput.addEventListener('input', validateForm);
+    
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Authentication checks can go here
+
+            window.location.href = 'bankinfo.html';
+        });
+    </script>
 </body>
+</html>
