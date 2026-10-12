@@ -2,7 +2,7 @@ from collections import namedtuple
 
 
 users = set()
-User = namedtuple('User', ['ID', 'name', 'username', 'password'])
+User = namedtuple('User', ['ID', 'name', 'username', 'p_word'])
 users.add(User(1, "Samwise", "SamwiseTheBrave", "4myOldGaff3r!"))
 users.add(User(2, "Aragorn", "IsildursHeir", "Uh4vMySw0rd"))
 users.add(User(3, "Gandalf", "TheWhiteWizard", "Fo0lOf4T0ok!"))
@@ -10,12 +10,12 @@ users.add(User(3, "Gandalf", "TheWhiteWizard", "Fo0lOf4T0ok!"))
 
 accounts = set()
 Account = namedtuple('Account', ['ID', 'userID', 'acc_name', 'balance'])
-accounts.add(Account(1, 1, "Samwise's Checking", 281))
-accounts.add(Account(2, 2, "Strider's Checking", 140))
-accounts.add(Account(3, 2, "Aragorn's Stash", 520))
-accounts.add(Account(4, 2, "The King's Treasury", 56940))
-accounts.add(Account(5, 3, "Mithrandir's Savings", 2800))
-accounts.add(Account(6, 3, "Greybeard's Travel Funds", 640))
+accounts.add(Account(1, 1, "Samwise Checking", 281))
+accounts.add(Account(2, 2, "Strider Checking", 140))
+accounts.add(Account(3, 2, "Aragorn Stash", 520))
+accounts.add(Account(4, 2, "Treasury of the King", 56940))
+accounts.add(Account(5, 3, "Mithrandir Savings", 2800))
+accounts.add(Account(6, 3, "Greybeard Travel Funds", 640))
 
 
 transactions = set()
