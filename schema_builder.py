@@ -1,4 +1,3 @@
-import sys
 import sqlite3
 import dummy_data
 

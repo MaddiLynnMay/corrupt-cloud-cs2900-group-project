@@ -1,3 +1,6 @@
+-- This is the format for the dummy bank, we won't actually be
+-- referencing this file though at all.
+
 DROP DATABASE IF EXISTS dummy_bank;
 CREATE DATABASE dummy_bank;
 USE dummy_bank;
