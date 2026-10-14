@@ -39,13 +39,28 @@
         emailInput.addEventListener('input', validateForm);
         passwordInput.addEventListener('input', validateForm);
     
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+        loginForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
 
-            // Authentication checks can go here
+    const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            username: emailInput.value,
+            password: passwordInput.value
+        })
+    });
 
-            window.location.href = 'bankinfo.html';
-        });
+    const result = await response.json();
+
+    if (response.ok) {
+        window.location.href = 'bankinfo.html';
+    } else {
+        alert(result.message);
+    }
+});
     </script>
 </body>
 </html>
