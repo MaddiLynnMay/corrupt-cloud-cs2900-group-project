@@ -42,10 +42,16 @@ ORDER BY average_transaction_amount DESC
 ;
 
 -- Get all account names for a given user name
-SELECT u.name, a.acc_name
+SELECT u.name, a.acc_name, a.balance
 FROM Account a
 JOIN User u ON u.ID = a.userID
 WHERE u.name = 'Aragorn';
+
+-- HACKED - Get all account names for a given user name
+SELECT u.name, a.acc_name, a.balance
+FROM Account a
+JOIN User u ON u.ID = a.userID
+WHERE u.name = ''OR 1=1--';
 
 -- All transactions on given Account by account name
 SELECT a.acc_name, t.*
