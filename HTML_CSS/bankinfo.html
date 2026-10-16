@@ -3,36 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login form design</title>
+    <title>Bank Info</title>
     <link rel="stylesheet" href="bankinfostyle.css">
 </head>
-<html>
-    <body>
-        <a href="index.html">Log out</a>
-        <h1>Bank Info HTML</h1>
-        <h3>Hello [Placeholder Name]</h3>
-        <p>Current Balance: </p>
-        <table>
-            <tr>
-                <th>Name</th>
-                <th>Type</th>
-                <th>Amount</th>
-            </tr>
-            <tr>
-                <td>Placeholder Name</td>
-                <td>Placeholder Type</td>
-                <td>Placeholder Amount</td>
-            </tr>
-            <tr>
-                <td>Placeholder Name</td>
-                <td>Placeholder Type</td>
-                <td>Placeholder Amount</td>
-            </tr>
-            <tr>
-                <td>Placeholder Name</td>
-                <td>Placeholder Type</td>
-                <td>Placeholder Amount</td>
-            </tr>          
-        </table>
-    </body>
+<body>
+    <a href="index.html">Log out</a>
+    <h1>Bank Info</h1>
+    <h3 id="user-name">Loading user...</h3>
+    <div id="accounts"></div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const username = params.get('username');
+
+        async function loadBankInfo() {
+            const response = await fetch(
+                '/api/bankinfo/' + encodeURIComponent(username)
+            );
+            const data = await response.json();
+
+            if (!response.ok) {
+                document.getElementById('user-name').textContent =
+                    data.message || 'Could not load bank information';
+                return;
+            }
+
+            document.getElementById('user-name').textContent =
+                'Hello ' + data.name;
+
+            const accountsDiv = document.getElementById('accounts');
+
+            data.accounts.forEach(account => {
+                const section = document.createElement('section');
+                const balance = account.balance[0][1];
+
+                section.innerHTML = `
+                    <h2>${account.name}</h2>
+                    <p>Current Balance: $${balance}</p>
+                    <table border="1">
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Balance</th>
+                            <th>Note</th>
+                        </tr>
+                    </table>
+                `;
+
+                const table = section.querySelector('table');
+
+                account.transactions.forEach(transaction => {
+                    const row = table.insertRow();
+                    row.insertCell().textContent = transaction[3];
+                    row.insertCell().textContent = '$' + transaction[4];
+                    row.insertCell().textContent = '$' + transaction[5];
+                    row.insertCell().textContent = transaction[6];
+                });
+
+                accountsDiv.appendChild(section);
+            });
+        }
+
+        if (username) {
+            loadBankInfo();
+        } else {
+            document.getElementById('user-name').textContent =
+                'No username provided. Please log in again.';
+        }
+    </script>
+</body>
 </html>

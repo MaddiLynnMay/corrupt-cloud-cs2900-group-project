@@ -56,7 +56,7 @@
     const result = await response.json();
 
     if (response.ok) {
-        window.location.href = 'bankinfo.html';
+        window.location.href = 'bankinfo.html?username=' + encodeURIComponent(emailInput.value);
     } else {
         alert(result.message);
     }
