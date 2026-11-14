@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="bankinfostyle.css">
 </head>
 <body>
-    <a href="index.html">Log out</a>
+    <button id = "logout-button">Log out</button>
     <h1>Bank Info</h1>
     <h3 id="user-name">Loading user...</h3>
     <div id="accounts"></div>
@@ -18,7 +18,10 @@
 
         async function loadBankInfo() {
             const response = await fetch(
-                '/api/bankinfo/' + encodeURIComponent(username)
+                '/api/bankinfo/' + encodeURIComponent(username),
+                {
+                    credentials: 'include'
+                }
             );
             const data = await response.json();
 
@@ -70,6 +73,14 @@
             document.getElementById('user-name').textContent =
                 'No username provided. Please log in again.';
         }
+
+        document.getElementById('logout-button').addEventListener('click', async () => {
+            await fetch('/api/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            window.location.href = 'index.html';
+        });
     </script>
 </body>
 </html>

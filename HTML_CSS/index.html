@@ -44,6 +44,7 @@
 
     const response = await fetch('/api/login', {
         method: 'POST',
+        credentials: 'include', // tells browser to include cookies with request and accept cookies from response
         headers: {
             'Content-Type': 'application/json'
         },
