@@ -1,11 +1,58 @@
 
 from flask import Flask, jsonify, request
-import sys
+from functools import wraps
+import jwt
+import datetime
+import os
 
-sys.path.append("/home/dd/corrupt-cloud-cs2900-group-project")
+BASE_DIR = os.path.dirname(os.path.abspath(__path__))
+DATABASE_PATH = os.path.join(BASE_DIR, "dummy_bank.db")
+
 from db_controler import DB_Controler
 
 app = Flask(__name__)
+
+# Secret key that the backend uses to sign tokens and verify they haven't
+# been tampered with.
+# JWT_SECRET_KEY looks for the key stored in the backend
+# development_secret_key is a fallback for local development
+app.config["SECRET_KEY"] = os.environ.get(
+    "JWT_SECRET_KEY", "development-secret-key"
+)
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        # retrieves JWT cookie 
+        token = request.cookies.get("auth_token")
+
+        #checks if user has token
+        if not token:
+            return jsonify(message="Authentication required"), 401
+
+        try:
+            # verifies token signature
+            decoded = jwt.decode(
+                token,
+                app.config["SECRET_KEY"],
+                algorithms=["HS256"]
+            )
+
+        # detects expired tokens
+        except jwt.ExpiredSignatureError:
+            return jsonify(message="Token expired"), 401
+
+        # detects invalid tokens
+        except jwt.InvalidTokenError:
+            return jsonify(message="Invalid token"), 401
+
+        # stores authenticated username for route
+        request.current_user = decoded.get("username")
+
+        # allows original route to execute
+        return f(*args, **kwargs)
+
+    return decorated
 
 @app.route("/hello")
 def hello():
@@ -13,9 +60,7 @@ def hello():
 
 @app.route("/users")
 def users():
-    db = DB_Controler(
-        "/home/dd/corrupt-cloud-cs2900-group-project/dummy_bank.db"
-    )
+    db = DB_Controler(DATABASE_PATH)
     results = db.run_query("SELECT ID, name, username FROM User;")
 
     if results == -1:
@@ -30,9 +75,7 @@ def login():
     username = data.get("username", "")
     password = data.get("password", "")
 
-    db = DB_Controler(
-        "/home/dd/corrupt-cloud-cs2900-group-project/dummy_bank.db"
-    )
+    db = DB_Controler(DATABASE_PATH)
 
     results = db.user_by_username_pword(username, password)
 
@@ -40,15 +83,58 @@ def login():
         return jsonify(message="Database query failed"), 500
 
     if results:
-        return jsonify(message="Login successful")
+        # .encode creates the actual JWT (json web token)
+        token = jwt.encode(
+            {
+                # identifies which user the token belongs to
+                "username": username,
+                # token expires in 30 minutes
+                "exp": datetime.datetime.now(datetime.timezone.utc)
+                + datetime.timedelta(minutes=30)
+            },
+            # secret key used to sign token
+            app.config["SECRET_KEY"],
+            # signing algorithm
+            algorithm = "HS256"
+        )
+        response = jsonify(message = "Login successful")
+
+        response.set_cookie(
+            "auth_token", # cookie name
+            token,
+            httponly = True, # prevents javascript access
+            secure = False, # allows HTTP during local development, change to True later
+            samesite = "Lax", # provides some CSRF protection
+            max_age = 1800 # cookie expires after 30 minutes
+        )
+
+        return response
 
     return jsonify(message="Invalid username or password"), 401
 
-@app.route("/bankinfo/<username>")
-def bankinfo(username):
-    db = DB_Controler(
-        "/home/dd/corrupt-cloud-cs2900-group-project/dummy_bank.db"
+# creates endpoint for logging out
+@app.route("/logout", methods=["POST"])
+def logout():
+    response = jsonify(message = "Logout successful")
+
+    # removes authentication cookie
+    response.delete_cookie(
+        "auth_token",
+        # matches cookie settings used duwhring login
+        httponly = True,
+        secure = False,
+        samesite = "Lax"
     )
+
+    return response
+
+@app.route("/bankinfo/<username>")
+@require_auth
+def bankinfo(username):
+    if username != request.current_user:
+        return jsonify(message = "You cannot access another user's information"), 403
+
+    db = DB_Controler(DATABASE_PATH)
 
     users = db.run_query(
         f"SELECT ID, name FROM User WHERE username = '{username}';"
