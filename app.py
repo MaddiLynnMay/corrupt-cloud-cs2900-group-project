@@ -55,10 +55,12 @@ def require_auth(f):
     return decorated
 
 @app.route("/hello")
+@require_auth
 def hello():
     return jsonify(message="Hello from the backend!")
 
 @app.route("/users")
+@require_auth
 def users():
     db = DB_Controler(DATABASE_PATH)
     results = db.run_query("SELECT ID, name, username FROM User;")
