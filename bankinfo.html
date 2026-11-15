@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Info</title>
+    <link rel="stylesheet" href="bankinfostyle.css">
+</head>
+<body>
+    <button id = "logout-button">Log out</button>
+    <h1>Bank Info</h1>
+    <h3 id="user-name">Loading user...</h3>
+    <div id="accounts"></div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const username = params.get('username');
+
+        async function loadBankInfo() {
+            const response = await fetch(
+                '/api/bankinfo/' + encodeURIComponent(username),
+                {
+                    credentials: 'include'
+                }
+            );
+            const data = await response.json();
+
+            if (!response.ok) {
+                document.getElementById('user-name').textContent =
+                    data.message || 'Could not load bank information';
+                return;
+            }
+
+            document.getElementById('user-name').textContent =
+                'Hello ' + data.name;
+
+            const accountsDiv = document.getElementById('accounts');
+
+            data.accounts.forEach(account => {
+                const section = document.createElement('section');
+                const balance = account.balance[0][1];
+
+                section.innerHTML = `
+                    <h2>${account.name}</h2>
+                    <p>Current Balance: $${balance}</p>
+                    <table border="1">
+                        <tr>
+                            <th>Date</th>
+                            <th>Amount</th>
+                            <th>Balance</th>
+                            <th>Note</th>
+                        </tr>
+                    </table>
+                `;
+
+                const table = section.querySelector('table');
+
+                account.transactions.forEach(transaction => {
+                    const row = table.insertRow();
+                    row.insertCell().textContent = transaction[3];
+                    row.insertCell().textContent = '$' + transaction[4];
+                    row.insertCell().textContent = '$' + transaction[5];
+                    row.insertCell().textContent = transaction[6];
+                });
+
+                accountsDiv.appendChild(section);
+            });
+        }
+
+        if (username) {
+            loadBankInfo();
+        } else {
+            document.getElementById('user-name').textContent =
+                'No username provided. Please log in again.';
+        }
+
+        document.getElementById('logout-button').addEventListener('click', async () => {
+            const response = await fetch('/api/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                window.location.href = 'index.html';
+            } else {
+                alert('Logout failed. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

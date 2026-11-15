@@ -5,7 +5,7 @@ import jwt
 import datetime
 import os
 
-BASE_DIR = os.path.dirname(os.path.abspath(__path__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_PATH = os.path.join(BASE_DIR, "dummy_bank.db")
 
 from db_controler import DB_Controler
@@ -115,15 +115,17 @@ def login():
 # creates endpoint for logging out
 @app.route("/logout", methods=["POST"])
 def logout():
-    response = jsonify(message = "Logout successful")
+    response = jsonify(message="Logout successful")
 
-    # removes authentication cookie
-    response.delete_cookie(
+    response.set_cookie(
         "auth_token",
-        # matches cookie settings used duwhring login
-        httponly = True,
-        secure = False,
-        samesite = "Lax"
+        "",
+        max_age=0,
+        expires=0,
+        path="/",
+        httponly=True,
+        secure=False,
+        samesite="Lax"
     )
 
     return response
