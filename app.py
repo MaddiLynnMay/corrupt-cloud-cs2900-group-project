@@ -5,7 +5,7 @@ import jwt
 import datetime
 import os
 
-BASE_DIR = os.path.dirname(os.path.abspath(__path__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_PATH = os.path.join(BASE_DIR, "dummy_bank.db")
 
 from db_controler import DB_Controler
@@ -128,11 +128,10 @@ def logout():
 
     return response
 
-@app.route("/bankinfo/<username>")
+@app.route("/bankinfo/")
 @require_auth
-def bankinfo(username):
-    if username != request.current_user:
-        return jsonify(message = "You cannot access another user's information"), 403
+def bankinfo():
+    username = request.current_user
 
     db = DB_Controler(DATABASE_PATH)
 

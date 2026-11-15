@@ -13,12 +13,10 @@
     <div id="accounts"></div>
 
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const username = params.get('username');
 
         async function loadBankInfo() {
             const response = await fetch(
-                '/api/bankinfo/' + encodeURIComponent(username),
+                '/api/bankinfo',
                 {
                     credentials: 'include'
                 }
@@ -67,12 +65,7 @@
             });
         }
 
-        if (username) {
-            loadBankInfo();
-        } else {
-            document.getElementById('user-name').textContent =
-                'No username provided. Please log in again.';
-        }
+        loadBankInfo();
 
         document.getElementById('logout-button').addEventListener('click', async () => {
             await fetch('/api/logout', {
