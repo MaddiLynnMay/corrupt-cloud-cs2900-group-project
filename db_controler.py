@@ -5,31 +5,38 @@ class DB_Controler():
         self.db = database
 
 
-    def run_query(self, query):
+    def run_query(self, query, *args):
         """Takes a query and returns the results of that query ran 
         against the database"""
         conn = sqlite3.connect(self.db)
         cursor = conn.cursor()
 
+        data = tuple(args)
+
         try:
-            results = cursor.execute(query)
+            if data:
+                results = cursor.execute(query, data)
+            else:
+                results = cursor.execute(query)
+
+            if results:
+                return [r for r in results]
+            
         except:
             cursor.close()
             conn.close()
             print("Bad Query")
             return -1
-        
-        out = [r for r in results]
 
         # For now I just have it closing the connection between each
         # query, and reopening it as needed.
         cursor.close()
         conn.close()
 
-        return out
+        return [(None,)]
 
     ## All queries
-    def all_users(self): # This query good candidate for injection
+    def all_users(self):
         """returns all users in the User table
         return format: [(userID, name, username, p_word), (...)]"""
         query = """
@@ -45,11 +52,11 @@ class DB_Controler():
             SELECT u.name, a.acc_name, a.balance
             FROM Account a
             JOIN User u ON u.ID = a.userID
-            WHERE u.ID = '{userID}';
+            WHERE u.ID = ?;
             """
-        return self.run_query(query)
+        return self.run_query(query, userID)
     
-    def specific_account(self, account_name):
+    def specific_account(self, acc_name):
         """Returns an account given its name or ID
         return format: [(accountID, userID, acc_name, balance)]"""
         try:
@@ -57,18 +64,20 @@ class DB_Controler():
                 -- get an account by it's ID
                 SELECT *
                 FROM Account
-                WHERE ID = {int(account_name)};
+                WHERE ID = ?;
                 """
+            results = self.run_query(query, int(acc_name))
         except:
             query = f"""
                 -- get an account by it's name
                 SELECT *
                 FROM Account
-                WHERE acc_name = '{account_name}';
+                WHERE acc_name = ?;
                 """
-        return self.run_query(query)
+            results = self.run_query(query, acc_name)
+        return results
 
-    def account_balance(self, account_name):
+    def account_balance(self, acc_name):
         """Returns account balance given the account name or ID
         return format: [(acc_name, balance)]"""
         try:
@@ -76,16 +85,18 @@ class DB_Controler():
                 -- Account balance by accountID
                 SELECT acc_name, balance
                 FROM Account
-                WHERE ID = {int(account_name)};
+                WHERE ID = ?;
                 """
+            results = self.run_query(query, int(acc_name))
         except:
             query = f"""
                 -- Account balance by account name
                 SELECT acc_name, balance
                 FROM Account
-                WHERE acc_name = '{account_name}';
+                WHERE acc_name = ?;
                 """
-        return self.run_query(query)
+            results = self.run_query(query, acc_name)
+        return results
 
     def acc_transactions(self, acc_name): # This query good candidate for injection
         """Returns all transactions on a given account given the
@@ -98,9 +109,10 @@ class DB_Controler():
                 FROM AccTransaction t
                 JOIN Account a ON a.ID = t.accountID
                 JOIN User u ON u.ID = a.userID
-                WHERE a.ID = {int(acc_name)}
+                WHERE a.ID = ?
                 ORDER BY date DESC;
                 """
+            results = self.run_query(query, int(acc_name))
         except:
             query = f"""
                 -- All transactions on given Account by account name
@@ -108,10 +120,11 @@ class DB_Controler():
                 FROM AccTransaction t
                 JOIN Account a ON a.ID = t.accountID
                 JOIN User u ON u.ID = a.userID
-                WHERE a.acc_name = "{acc_name}"
+                WHERE a.acc_name = ?
                 ORDER BY date DESC;
                 """
-        return self.run_query(query)
+            results = self.run_query(query, acc_name)
+        return results
     
     def acc_transactions_limit(self, acc_name, limit):
         """Returns most recent transactions on given account by name
@@ -124,10 +137,11 @@ class DB_Controler():
                 FROM AccTransaction t
                 JOIN Account a ON a.ID = t.accountID
                 JOIN User u ON u.ID = a.userID
-                WHERE a.ID = {int(acc_name)}
+                WHERE a.ID = ?
                 ORDER BY date DESC
-                LIMIT {limit};
+                LIMIT ?;
                 """
+            results = self.run_query(query, int(acc_name), limit)
         except:
             query = f"""
                 -- Most recent transactions on given Account
@@ -135,35 +149,38 @@ class DB_Controler():
                 FROM AccTransaction t
                 JOIN Account a ON a.ID = t.accountID
                 JOIN User u ON u.ID = a.userID
-                WHERE a.acc_name = "{acc_name}"
+                WHERE a.acc_name = ?
                 ORDER BY date DESC
-                LIMIT {limit};
+                LIMIT ?;
                 """
-        return self.run_query(query)
+            results = self.run_query(query, acc_name, limit)
+        return results
     
     def user_total_balance(self, user):
         """Returns total balance across a given user's accounts by
         user name or ID
         return format: [(user's name, user_balance)]"""
         try:
-            query = f"""
+            query = """
                 -- Sum of all account balances by user ID
                 SELECT u.name, SUM(a.balance) AS "user_balance"
                 FROM User u
                 JOIN Account a ON a.userID = u.ID
-                WHERE u.ID = {int(user)}
+                WHERE u.ID = ?
                 GROUP BY u.ID;
                 """
+            results = self.run_query(query, int(user))
         except:
-            query = f"""
+            query = """
                 -- Sum of account balances by user
                 SELECT u.name, SUM(a.balance) AS "user_balance"
                 FROM User u
                 JOIN Account a ON a.userID = u.ID
-                WHERE u.name = "{user}"
+                WHERE u.name = ?
                 GROUP BY u.ID;
                 """
-        return self.run_query(query)
+            results = self.run_query(query, user)
+        return results
     
     def user_by_username_pword(self, username, p_word): # This query good candidate for injection
         """Returns user if username and p_word match
@@ -173,9 +190,10 @@ class DB_Controler():
             -- Get user by username and password
             SELECT *
             FROM User
-            WHERE username = '{username}' AND p_word = '{p_word}';
+            WHERE username = ?
+            AND p_word = ?;
             """
-        return self.run_query(query)
+        return self.run_query(query, username, p_word)
         
         
 
@@ -215,7 +233,7 @@ def main():
 
     for ex in all_examples:
         if not ex:
-            print("\tEMPTY")
+            print(f"\tEMPTY: {ex=}")
         elif type(ex) in (list, tuple):
             for row in ex:
                 print(row)
