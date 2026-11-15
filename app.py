@@ -5,7 +5,7 @@ import jwt
 import datetime
 import os
 
-BASE_DIR = os.path.dirname(os.path.abspath(__path__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_PATH = os.path.join(BASE_DIR, "dummy_bank.db")
 
 from db_controler import DB_Controler
@@ -55,10 +55,12 @@ def require_auth(f):
     return decorated
 
 @app.route("/hello")
+@require_auth
 def hello():
     return jsonify(message="Hello from the backend!")
 
 @app.route("/users")
+@require_auth
 def users():
     db = DB_Controler(DATABASE_PATH)
     results = db.run_query("SELECT ID, name, username FROM User;")
