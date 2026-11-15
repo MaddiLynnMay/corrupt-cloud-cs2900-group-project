@@ -2,7 +2,7 @@
 from flask import Flask, jsonify, request
 import sys
 
-sys.path.append("/corrupt-cloud-cs2900-group-project")
+sys.path.append("/home/dd/corrupt-cloud-cs2900-group-project")
 from db_controler import DB_Controler
 
 app = Flask(__name__)
@@ -14,7 +14,7 @@ def hello():
 @app.route("/users")
 def users():
     db = DB_Controler(
-        "dummy_bank.db"
+        "/home/dd/corrupt-cloud-cs2900-group-project/dummy_bank.db"
     )
     results = db.run_query("SELECT ID, name, username FROM User;")
 
@@ -31,7 +31,7 @@ def login():
     password = data.get("password", "")
 
     db = DB_Controler(
-        "dummy_bank.db"
+        "/home/dd/corrupt-cloud-cs2900-group-project/dummy_bank.db"
     )
 
     results = db.user_by_username_pword(username, password)
@@ -47,7 +47,7 @@ def login():
 @app.route("/bankinfo/<username>")
 def bankinfo(username):
     db = DB_Controler(
-        "dummy_bank.db"
+        "/home/dd/corrupt-cloud-cs2900-group-project/dummy_bank.db"
     )
 
     users = db.run_query(
