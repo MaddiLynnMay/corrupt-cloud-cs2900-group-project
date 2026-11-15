@@ -33,7 +33,7 @@ class DB_Controler():
         cursor.close()
         conn.close()
 
-        return [(None,)]
+        return [(None,None)]
 
     ## All queries
     def all_users(self):
